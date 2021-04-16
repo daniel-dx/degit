@@ -1,4 +1,5 @@
 import fs from 'fs';
+import fse from'fs-extra';
 import path from 'path';
 import tar from 'tar';
 import EventEmitter from 'events';
@@ -317,7 +318,21 @@ class Degit extends EventEmitter {
 	}
 
 	async _cloneWithGit(dir, dest) {
-		await exec(`git clone ${this.repo.ssh} ${dest}`);
+		const {ref, gitUrl} = this.repo
+		// Determine whether the project directory exists, if it exists, then pull
+		const tempPath = path.resolve(dir, ref)
+		try {
+			fs.statSync(tempPath);
+			this._verbose({
+				code: 'PROJECT_EXISTS',
+				message: `Project already exists locally and will pull the latest content from remote`
+			});
+			await exec(`cd ${tempPath}; git pull`)
+		} catch(e) {
+			await exec(`git clone --depth 1 ${ref === 'HEAD' ? '' : `--branch ${ref}`} ${gitUrl} ${tempPath}`);
+		}
+
+		await fse.copy(tempPath, dest)
 		await exec(`rm -rf ${path.resolve(dest, '.git')}`);
 	}
 }
@@ -325,7 +340,7 @@ class Degit extends EventEmitter {
 const supported = new Set(['github', 'gitlab', 'bitbucket', 'git.sr.ht']);
 
 function parse(src) {
-	const match = /^(?:(?:https:\/\/)?([^:/]+\.[^:/]+)\/|git@([^:/]+)[:/]|([^/]+):)?([^/\s]+)\/([^/\s#]+)(?:((?:\/[^/\s#]+)+))?(?:\/)?(?:#(.+))?/.exec(
+	const match = /^(?:(?:http[s]?:\/\/)?([^:/]+\.[^:/]+)\/|git@([^:/]+)[:/]|([^/]+):)?([^/\s]+)\/([^/\s#]+)(?:((?:\/[^/\s#]+)+))?(?:\/)?(?:#(.+))?/.exec(
 		src
 	);
 	if (!match) {
@@ -334,17 +349,18 @@ function parse(src) {
 		});
 	}
 
-	const site = (match[1] || match[2] || match[3] || 'github').replace(
+	let site = (match[1] || match[2] || match[3] || 'github').replace(
 		/\.(com|org)$/,
 		''
 	);
 	if (!supported.has(site)) {
-		throw new DegitError(
-			`degit supports GitHub, GitLab, Sourcehut and BitBucket`,
-			{
-				code: 'UNSUPPORTED_HOST'
-			}
-		);
+		// throw new DegitError(
+		// 	`degit supports GitHub, GitLab, Sourcehut and BitBucket`,
+		// 	{
+		// 		code: 'UNSUPPORTED_HOST'
+		// 	}
+		// );
+		console.warn(chalk.yellow('degit has build-in support for GitHub, GitLab, Sourcehut and BitBucket, other platforms may have exceptions and not support subdirectory'))
 	}
 
 	const user = match[4];
@@ -360,7 +376,12 @@ function parse(src) {
 
 	const mode = supported.has(site) ? 'tar' : 'git';
 
-	return { site, user, name, ref, url, ssh, subdir, mode };
+	let gitUrl = src.replace(`#${ref}`, '')
+	if (!supported.has(site)) {
+		site = match[1] || match[2] || match[3]
+	}
+
+	return { site, user, name, ref, url, ssh, subdir, mode, gitUrl };
 }
 
 async function untar(file, dest, subdir = null) {

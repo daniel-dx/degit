@@ -37,6 +37,18 @@ describe('degit', function() {
 		});
 	}
 
+	function exist(dir, files) {
+		const expected = glob('**', { cwd: dir });
+		let result = true
+		files.some(file => {
+			if (expected.indexOf(file) === -1) {
+				result = false
+				return true
+			}
+		})
+		assert.equal(result, true)
+	}
+
 	beforeEach(async () => await rimraf('.tmp'));
 	afterEach(async () => await rimraf('.tmp'));
 
@@ -103,6 +115,28 @@ describe('degit', function() {
 			});
 		});
 	});
+
+	describe('Git platforms not supported by built-in', () => {
+		[
+			'https://gitee.com/danieldx/nice-hooks.git'
+		].forEach(src => {
+			it(src, async () => {
+				await exec(`node ${degitPath} ${src} .tmp/test-repo -v`);
+				exist(`.tmp/test-repo`, ['README.md'],);
+			});
+		});
+	})
+
+	describe('Git platforms not supported by built-in: specify a branch', () => {
+		[
+			'https://gitee.com/danieldx/nice-hooks.git#feature/demo'
+		].forEach(src => {
+			it(src, async () => {
+				await exec(`node ${degitPath} ${src} .tmp/test-repo -v`);
+				exist(`.tmp/test-repo`, ['hello.txt'],);
+			});
+		});
+	})
 
 	describe('Subdirectories', () => {
 		[

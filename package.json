@@ -1,5 +1,5 @@
 {
-	"name": "degit",
+	"name": "@daniel-dx/degit",
 	"version": "2.8.4",
 	"engines": {
 		"node": ">=8.0.0"
@@ -74,5 +74,8 @@
 			"prettier --write",
 			"git add"
 		]
+	},
+	"dependencies": {
+		"fs-extra": "9.1.0"
 	}
 }
