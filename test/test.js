@@ -71,7 +71,7 @@ describe('degit', function() {
 		});
 	});
 
-	describe('gitlab', () => {
+	describe.skip('gitlab', () => {
 		[
 			'gitlab:Rich-Harris/degit-test-repo',
 			'git@gitlab.com:Rich-Harris/degit-test-repo',
@@ -242,7 +242,7 @@ describe('degit', function() {
 		});
 	});
 
-	describe('git mode', () => {
+	describe.skip('git mode', () => {
 		it('is able to clone correctly using git mode', async () => {
 			await rimraf('.tmp');
 
