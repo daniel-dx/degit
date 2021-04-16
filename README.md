@@ -50,12 +50,12 @@ degit https://bitbucket.org/user/repo
 degit git.sr.ht/user/repo
 degit git@git.sr.ht:user/repo
 degit https://git.sr.ht/user/repo
-```
 
 Or other git platforms you usage
 # download from other git platforms (not Github, GitLab, BitBucket and Sourcehut)
 degit https://other.git.site/user/repo.git
 degit git@other.git.site:user/repo.git
+```
 
 ### Specify a tag, branch or commit
 
