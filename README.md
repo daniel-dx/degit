@@ -15,7 +15,7 @@ _Requires Node 8 or above, because `async` and `await` are the cat's pyjamas_
 ## Installation
 
 ```bash
-npm install -g degit
+npm install -g @daniel-dx/degit
 ```
 
 ## Usage
@@ -120,7 +120,7 @@ A few salient differences:
 You can also use degit inside a Node script:
 
 ```js
-const degit = require('degit');
+const degit = require('@daniel-dx/degit');
 
 const emitter = degit('user/repo', {
 	cache: true,
