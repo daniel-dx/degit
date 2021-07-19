@@ -91,7 +91,7 @@ class Degit extends EventEmitter {
 
 		const { repo } = this;
 
-		const dir = path.join(base, repo.site, repo.user, repo.name);
+		const dir = path.join(base, repo.site, repo.user, repo.name, repo.subdir || '');
 
 		if (this.mode === 'tar') {
 			await this._cloneWithTar(dir, dest);
@@ -340,7 +340,7 @@ class Degit extends EventEmitter {
 const supported = new Set(['github', 'gitlab', 'bitbucket', 'git.sr.ht']);
 
 function parse(src) {
-	const match = /^(?:(?:http[s]?:\/\/)?([^:/]+\.[^:/]+)\/|git@([^:/]+)[:/]|([^/]+):)?([^/\s]+)\/([^/\s#]+)(?:((?:\/[^/\s#]+)+))?(?:\/)?(?:#(.+))?/.exec(
+	const match = /^(?:(?:http[s]?:\/\/)?([^:/]+\.[^:/]+)\/|git@([^:/]+)[:/]|([^/]+):)?([^/\s]+)\/([^/\s#]+)(?:((?:\/[^/\s#]+)+))?(?:\/)*(?:#(.+))?/.exec(
 		src
 	);
 	if (!match) {
@@ -365,7 +365,7 @@ function parse(src) {
 
 	const user = match[4];
 	const name = match[5].replace(/\.git$/, '');
-	const subdir = match[6];
+	const subdir = match[6] ? match[6].replace(/\.git$/, '') : match[6];
 	const ref = match[7] || 'HEAD';
 
 	const domain = `${site}.${
