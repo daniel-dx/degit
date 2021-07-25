@@ -340,8 +340,18 @@ class Degit extends EventEmitter {
 const supported = new Set(['github', 'gitlab', 'bitbucket', 'git.sr.ht']);
 
 function parse(src) {
+
+	let parseSrc = src
+	const multiGroupMatch = parseSrc.match(/[^/]([/:]([^/:]+\/){2,})[^/]+.git/)
+	if (multiGroupMatch) { // The case of multiple groups：https://<git host>/<parent group>/<sub group>/<name>.git'
+		// Deal with the case of a single group, because this kind of non-standard git url can only go in git mode
+		const namePath = multiGroupMatch[1]
+		const [firstChar, ...otherStr] = namePath
+		parseSrc = src.replace(namePath, `${firstChar}${otherStr.join('').replace(/\//g, '')}${otherStr.pop()}`)
+	}
+
 	const match = /^(?:(?:http[s]?:\/\/)?([^:/]+\.[^:/]+)\/|git@([^:/]+)[:/]|([^/]+):)?([^/\s]+)\/([^/\s#]+)(?:((?:\/[^/\s#]+)+))?(?:\/)?(?:#(.+))?/.exec(
-		src
+		parseSrc
 	);
 	if (!match) {
 		throw new DegitError(`could not parse ${src}`, {
